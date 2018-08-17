@@ -5,7 +5,7 @@ set -eou pipefail
 
 docker_cleanup() {
     echo "cleaning up existing network and containers..."
-    CONTAINERS='entity'
+    CONTAINERS='libri|entity'
     docker ps | grep -E ${CONTAINERS} | awk '{print $1}' | xargs -I {} docker stop {} || true
     docker ps -a | grep -E ${CONTAINERS} | awk '{print $1}' | xargs -I {} docker rm {} || true
     docker network list | grep ${CONTAINERS} | awk '{print $2}' | xargs -I {} docker network rm {} || true
@@ -29,8 +29,6 @@ echo
 echo "creating entity docker network..."
 docker network create entity
 
-# TODO start and healthcheck dependency services if necessary
-
 echo
 echo "starting entity..."
 port=10100
@@ -39,22 +37,20 @@ docker run --name "${name}" --net=entity -d -p ${port}:${port} ${ENTITY_IMAGE} \
     start \
     --logLevel "${ENTITY_LOG_LEVEL}" \
     --serverPort ${port}
-    # TODO add other relevant args if necessary
 entity_addrs="${name}:${port}"
 entity_containers="${name}"
 
 echo
 echo "testing entity health..."
 docker run --rm --net=entity ${ENTITY_IMAGE} test health \
-    --addresses "${entity_addrs}" \
+    --directories "${entity_addrs}" \
     --logLevel "${ENTITY_LOG_LEVEL}"
 
 echo
 echo "testing entity ..."
 docker run --rm --net=entity ${ENTITY_IMAGE} test io \
-    --addresses "${entity_addrs}" \
+    --directories "${entity_addrs}" \
     --logLevel "${ENTITY_LOG_LEVEL}"
-    # TODO add other relevant args if necessary
 
 echo
 echo "cleaning up..."

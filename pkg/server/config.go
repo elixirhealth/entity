@@ -7,15 +7,11 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-const (
-// TODO add default config values here
-)
-
-// Config is the config for a Entity instance.
+// Config is the config for a Directory instance.
 type Config struct {
 	*server.BaseConfig
 	Storage *storage.Parameters
-	// TODO add config elements
+	DBUrl   string
 }
 
 // NewDefaultConfig create a new config instance with default values.
@@ -25,7 +21,6 @@ func NewDefaultConfig() *Config {
 	}
 	return config.
 		WithDefaultStorage()
-	// TODO add .WithDefaultCONFIGELEMENT for each CONFIGELEMENT
 }
 
 // MarshalLogObject writes the config to the given object encoder.
@@ -34,8 +29,7 @@ func (c *Config) MarshalLogObject(oe zapcore.ObjectEncoder) error {
 	errors.MaybePanic(err) // should never happen
 	err = oe.AddObject(logStorage, c.Storage)
 	errors.MaybePanic(err) // should never happen
-
-	// TODO add other config elements
+	oe.AddString(logDBUrl, c.DBUrl)
 	return nil
 }
 
@@ -54,4 +48,8 @@ func (c *Config) WithDefaultStorage() *Config {
 	return c
 }
 
-// TODO add WithCONFIGELEMENT and WithDefaultCONFIGELEMENT methods for each CONFIGELEMENT
+// WithDBUrl sets the DB URL to the given value.
+func (c *Config) WithDBUrl(dbURL string) *Config {
+	c.DBUrl = dbURL
+	return c
+}

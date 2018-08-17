@@ -3,5 +3,126 @@ syntax = "proto3";
 package entityapi;
 
 service Entity {
-    // TODO
+
+    // PutEntity adds a new or updates an existing entity.
+    rpc PutEntity (PutEntityRequest) returns (PutEntityResponse) {}
+
+    // GetEntity returns an existing entity with the given entity ID.
+    rpc GetEntity (GetEntityRequest) returns (GetEntityResponse) {}
+
+    // SearchEntity searches for entities matching the given query.
+    rpc SearchEntity (SearchEntityRequest) returns (SearchEntityResponse) {}
+
+    // AddPublicKeys adds a set of public keys for a given entity.
+    rpc AddPublicKeys (AddPublicKeysRequest) returns (AddPublicKeysResponse) {}
+
+    // GetPublicKeys gets the public keys for a given entity.
+    rpc GetPublicKeys (GetPublicKeysRequest) returns (GetPublicKeysResponse) {}
+
+    // SamplePublicKeys returns a sample of an entity's public keys for a particular requestor
+    // entity.
+    rpc SamplePublicKeys (SamplePublicKeysRequest) returns (SamplePublicKeysResponse) {}
+
+    // GetPublicKeyDetails returns the details for a list of public keys.
+    rpc GetPublicKeyDetails (GetPublicKeyDetailsRequest) returns (GetPublicKeyDetailsResponse) {}
+}
+
+
+message PutEntityRequest {
+    EntityDetail entity = 1;
+}
+
+message PutEntityResponse {
+    string entity_id = 1;
+}
+
+message GetEntityRequest {
+    string entity_id = 1;
+}
+
+message GetEntityResponse {
+    EntityDetail entity = 1;
+}
+
+message SearchEntityRequest {
+    string query = 1;
+    uint32 limit = 2;
+}
+
+message SearchEntityResponse {
+    repeated EntityDetail entities = 1;
+}
+
+message EntityDetail {
+    string entity_id = 1;
+    oneof attributes {
+        PatientAttributes patient = 2;
+        OfficeAttributes office = 3;
+    }
+}
+
+message PatientAttributes {
+    string last_name = 1;
+    string first_name = 2;
+    string middle_name = 3;
+    string suffix = 4;
+    Date birthdate = 5;
+}
+
+message OfficeAttributes {
+    string name = 1;
+    // TODO (drausin) address/location
+}
+
+message Date {
+    uint32 year = 1;
+    uint32 month = 2;
+    uint32 day = 3;
+}
+
+
+message AddPublicKeysRequest {
+    string entity_id = 1;
+    KeyType key_type = 2;
+    repeated bytes public_keys = 3;
+}
+
+message AddPublicKeysResponse {}
+
+message GetPublicKeyDetailsRequest {
+    repeated bytes public_keys = 3;
+}
+
+message GetPublicKeyDetailsResponse {
+    repeated PublicKeyDetail public_key_details = 1;
+}
+
+message GetPublicKeysRequest {
+    string entity_id = 1;
+    KeyType key_type = 2;
+}
+
+message GetPublicKeysResponse {
+    repeated bytes public_keys = 3;
+}
+
+message SamplePublicKeysRequest {
+    string of_entity_id = 1;
+    string requester_entity_id = 2;
+    uint32 n_public_keys = 3;
+}
+
+message SamplePublicKeysResponse {
+    repeated PublicKeyDetail public_key_details = 1;
+}
+
+message PublicKeyDetail {
+    bytes public_key = 1;
+    string entity_id = 2;
+    KeyType key_type = 3;
+}
+
+enum KeyType {
+    AUTHOR = 0;
+    READER = 1;
 }

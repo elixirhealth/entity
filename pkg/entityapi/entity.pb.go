@@ -8,6 +8,25 @@ It is generated from these files:
 	pkg/entityapi/entity.proto
 
 It has these top-level messages:
+	PutEntityRequest
+	PutEntityResponse
+	GetEntityRequest
+	GetEntityResponse
+	SearchEntityRequest
+	SearchEntityResponse
+	EntityDetail
+	PatientAttributes
+	OfficeAttributes
+	Date
+	AddPublicKeysRequest
+	AddPublicKeysResponse
+	GetPublicKeyDetailsRequest
+	GetPublicKeyDetailsResponse
+	GetPublicKeysRequest
+	GetPublicKeysResponse
+	SamplePublicKeysRequest
+	SamplePublicKeysResponse
+	PublicKeyDetail
 */
 package entityapi
 
@@ -31,6 +50,571 @@ var _ = math.Inf
 // proto package needs to be updated.
 const _ = proto.ProtoPackageIsVersion2 // please upgrade the proto package
 
+type KeyType int32
+
+const (
+	KeyType_AUTHOR KeyType = 0
+	KeyType_READER KeyType = 1
+)
+
+var KeyType_name = map[int32]string{
+	0: "AUTHOR",
+	1: "READER",
+}
+var KeyType_value = map[string]int32{
+	"AUTHOR": 0,
+	"READER": 1,
+}
+
+func (x KeyType) String() string {
+	return proto.EnumName(KeyType_name, int32(x))
+}
+func (KeyType) EnumDescriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+type PutEntityRequest struct {
+	Entity *EntityDetail `protobuf:"bytes,1,opt,name=entity" json:"entity,omitempty"`
+}
+
+func (m *PutEntityRequest) Reset()                    { *m = PutEntityRequest{} }
+func (m *PutEntityRequest) String() string            { return proto.CompactTextString(m) }
+func (*PutEntityRequest) ProtoMessage()               {}
+func (*PutEntityRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{0} }
+
+func (m *PutEntityRequest) GetEntity() *EntityDetail {
+	if m != nil {
+		return m.Entity
+	}
+	return nil
+}
+
+type PutEntityResponse struct {
+	EntityId string `protobuf:"bytes,1,opt,name=entity_id,json=entityId" json:"entity_id,omitempty"`
+}
+
+func (m *PutEntityResponse) Reset()                    { *m = PutEntityResponse{} }
+func (m *PutEntityResponse) String() string            { return proto.CompactTextString(m) }
+func (*PutEntityResponse) ProtoMessage()               {}
+func (*PutEntityResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{1} }
+
+func (m *PutEntityResponse) GetEntityId() string {
+	if m != nil {
+		return m.EntityId
+	}
+	return ""
+}
+
+type GetEntityRequest struct {
+	EntityId string `protobuf:"bytes,1,opt,name=entity_id,json=entityId" json:"entity_id,omitempty"`
+}
+
+func (m *GetEntityRequest) Reset()                    { *m = GetEntityRequest{} }
+func (m *GetEntityRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetEntityRequest) ProtoMessage()               {}
+func (*GetEntityRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{2} }
+
+func (m *GetEntityRequest) GetEntityId() string {
+	if m != nil {
+		return m.EntityId
+	}
+	return ""
+}
+
+type GetEntityResponse struct {
+	Entity *EntityDetail `protobuf:"bytes,1,opt,name=entity" json:"entity,omitempty"`
+}
+
+func (m *GetEntityResponse) Reset()                    { *m = GetEntityResponse{} }
+func (m *GetEntityResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetEntityResponse) ProtoMessage()               {}
+func (*GetEntityResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{3} }
+
+func (m *GetEntityResponse) GetEntity() *EntityDetail {
+	if m != nil {
+		return m.Entity
+	}
+	return nil
+}
+
+type SearchEntityRequest struct {
+	Query string `protobuf:"bytes,1,opt,name=query" json:"query,omitempty"`
+	Limit uint32 `protobuf:"varint,2,opt,name=limit" json:"limit,omitempty"`
+}
+
+func (m *SearchEntityRequest) Reset()                    { *m = SearchEntityRequest{} }
+func (m *SearchEntityRequest) String() string            { return proto.CompactTextString(m) }
+func (*SearchEntityRequest) ProtoMessage()               {}
+func (*SearchEntityRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{4} }
+
+func (m *SearchEntityRequest) GetQuery() string {
+	if m != nil {
+		return m.Query
+	}
+	return ""
+}
+
+func (m *SearchEntityRequest) GetLimit() uint32 {
+	if m != nil {
+		return m.Limit
+	}
+	return 0
+}
+
+type SearchEntityResponse struct {
+	Entities []*EntityDetail `protobuf:"bytes,1,rep,name=entities" json:"entities,omitempty"`
+}
+
+func (m *SearchEntityResponse) Reset()                    { *m = SearchEntityResponse{} }
+func (m *SearchEntityResponse) String() string            { return proto.CompactTextString(m) }
+func (*SearchEntityResponse) ProtoMessage()               {}
+func (*SearchEntityResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{5} }
+
+func (m *SearchEntityResponse) GetEntities() []*EntityDetail {
+	if m != nil {
+		return m.Entities
+	}
+	return nil
+}
+
+type EntityDetail struct {
+	EntityId string `protobuf:"bytes,1,opt,name=entity_id,json=entityId" json:"entity_id,omitempty"`
+	// Types that are valid to be assigned to Attributes:
+	//	*EntityDetail_Patient
+	//	*EntityDetail_Office
+	Attributes isEntityDetail_Attributes `protobuf_oneof:"attributes"`
+}
+
+func (m *EntityDetail) Reset()                    { *m = EntityDetail{} }
+func (m *EntityDetail) String() string            { return proto.CompactTextString(m) }
+func (*EntityDetail) ProtoMessage()               {}
+func (*EntityDetail) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{6} }
+
+type isEntityDetail_Attributes interface {
+	isEntityDetail_Attributes()
+}
+
+type EntityDetail_Patient struct {
+	Patient *PatientAttributes `protobuf:"bytes,2,opt,name=patient,oneof"`
+}
+type EntityDetail_Office struct {
+	Office *OfficeAttributes `protobuf:"bytes,3,opt,name=office,oneof"`
+}
+
+func (*EntityDetail_Patient) isEntityDetail_Attributes() {}
+func (*EntityDetail_Office) isEntityDetail_Attributes()  {}
+
+func (m *EntityDetail) GetAttributes() isEntityDetail_Attributes {
+	if m != nil {
+		return m.Attributes
+	}
+	return nil
+}
+
+func (m *EntityDetail) GetEntityId() string {
+	if m != nil {
+		return m.EntityId
+	}
+	return ""
+}
+
+func (m *EntityDetail) GetPatient() *PatientAttributes {
+	if x, ok := m.GetAttributes().(*EntityDetail_Patient); ok {
+		return x.Patient
+	}
+	return nil
+}
+
+func (m *EntityDetail) GetOffice() *OfficeAttributes {
+	if x, ok := m.GetAttributes().(*EntityDetail_Office); ok {
+		return x.Office
+	}
+	return nil
+}
+
+// XXX_OneofFuncs is for the internal use of the proto package.
+func (*EntityDetail) XXX_OneofFuncs() (func(msg proto.Message, b *proto.Buffer) error, func(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error), func(msg proto.Message) (n int), []interface{}) {
+	return _EntityDetail_OneofMarshaler, _EntityDetail_OneofUnmarshaler, _EntityDetail_OneofSizer, []interface{}{
+		(*EntityDetail_Patient)(nil),
+		(*EntityDetail_Office)(nil),
+	}
+}
+
+func _EntityDetail_OneofMarshaler(msg proto.Message, b *proto.Buffer) error {
+	m := msg.(*EntityDetail)
+	// attributes
+	switch x := m.Attributes.(type) {
+	case *EntityDetail_Patient:
+		b.EncodeVarint(2<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.Patient); err != nil {
+			return err
+		}
+	case *EntityDetail_Office:
+		b.EncodeVarint(3<<3 | proto.WireBytes)
+		if err := b.EncodeMessage(x.Office); err != nil {
+			return err
+		}
+	case nil:
+	default:
+		return fmt.Errorf("EntityDetail.Attributes has unexpected type %T", x)
+	}
+	return nil
+}
+
+func _EntityDetail_OneofUnmarshaler(msg proto.Message, tag, wire int, b *proto.Buffer) (bool, error) {
+	m := msg.(*EntityDetail)
+	switch tag {
+	case 2: // attributes.patient
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(PatientAttributes)
+		err := b.DecodeMessage(msg)
+		m.Attributes = &EntityDetail_Patient{msg}
+		return true, err
+	case 3: // attributes.office
+		if wire != proto.WireBytes {
+			return true, proto.ErrInternalBadWireType
+		}
+		msg := new(OfficeAttributes)
+		err := b.DecodeMessage(msg)
+		m.Attributes = &EntityDetail_Office{msg}
+		return true, err
+	default:
+		return false, nil
+	}
+}
+
+func _EntityDetail_OneofSizer(msg proto.Message) (n int) {
+	m := msg.(*EntityDetail)
+	// attributes
+	switch x := m.Attributes.(type) {
+	case *EntityDetail_Patient:
+		s := proto.Size(x.Patient)
+		n += proto.SizeVarint(2<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case *EntityDetail_Office:
+		s := proto.Size(x.Office)
+		n += proto.SizeVarint(3<<3 | proto.WireBytes)
+		n += proto.SizeVarint(uint64(s))
+		n += s
+	case nil:
+	default:
+		panic(fmt.Sprintf("proto: unexpected type %T in oneof", x))
+	}
+	return n
+}
+
+type PatientAttributes struct {
+	LastName   string `protobuf:"bytes,1,opt,name=last_name,json=lastName" json:"last_name,omitempty"`
+	FirstName  string `protobuf:"bytes,2,opt,name=first_name,json=firstName" json:"first_name,omitempty"`
+	MiddleName string `protobuf:"bytes,3,opt,name=middle_name,json=middleName" json:"middle_name,omitempty"`
+	Suffix     string `protobuf:"bytes,4,opt,name=suffix" json:"suffix,omitempty"`
+	Birthdate  *Date  `protobuf:"bytes,5,opt,name=birthdate" json:"birthdate,omitempty"`
+}
+
+func (m *PatientAttributes) Reset()                    { *m = PatientAttributes{} }
+func (m *PatientAttributes) String() string            { return proto.CompactTextString(m) }
+func (*PatientAttributes) ProtoMessage()               {}
+func (*PatientAttributes) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{7} }
+
+func (m *PatientAttributes) GetLastName() string {
+	if m != nil {
+		return m.LastName
+	}
+	return ""
+}
+
+func (m *PatientAttributes) GetFirstName() string {
+	if m != nil {
+		return m.FirstName
+	}
+	return ""
+}
+
+func (m *PatientAttributes) GetMiddleName() string {
+	if m != nil {
+		return m.MiddleName
+	}
+	return ""
+}
+
+func (m *PatientAttributes) GetSuffix() string {
+	if m != nil {
+		return m.Suffix
+	}
+	return ""
+}
+
+func (m *PatientAttributes) GetBirthdate() *Date {
+	if m != nil {
+		return m.Birthdate
+	}
+	return nil
+}
+
+type OfficeAttributes struct {
+	Name string `protobuf:"bytes,1,opt,name=name" json:"name,omitempty"`
+}
+
+func (m *OfficeAttributes) Reset()                    { *m = OfficeAttributes{} }
+func (m *OfficeAttributes) String() string            { return proto.CompactTextString(m) }
+func (*OfficeAttributes) ProtoMessage()               {}
+func (*OfficeAttributes) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{8} }
+
+func (m *OfficeAttributes) GetName() string {
+	if m != nil {
+		return m.Name
+	}
+	return ""
+}
+
+type Date struct {
+	Year  uint32 `protobuf:"varint,1,opt,name=year" json:"year,omitempty"`
+	Month uint32 `protobuf:"varint,2,opt,name=month" json:"month,omitempty"`
+	Day   uint32 `protobuf:"varint,3,opt,name=day" json:"day,omitempty"`
+}
+
+func (m *Date) Reset()                    { *m = Date{} }
+func (m *Date) String() string            { return proto.CompactTextString(m) }
+func (*Date) ProtoMessage()               {}
+func (*Date) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{9} }
+
+func (m *Date) GetYear() uint32 {
+	if m != nil {
+		return m.Year
+	}
+	return 0
+}
+
+func (m *Date) GetMonth() uint32 {
+	if m != nil {
+		return m.Month
+	}
+	return 0
+}
+
+func (m *Date) GetDay() uint32 {
+	if m != nil {
+		return m.Day
+	}
+	return 0
+}
+
+type AddPublicKeysRequest struct {
+	EntityId   string   `protobuf:"bytes,1,opt,name=entity_id,json=entityId" json:"entity_id,omitempty"`
+	KeyType    KeyType  `protobuf:"varint,2,opt,name=key_type,json=keyType,enum=entityapi.KeyType" json:"key_type,omitempty"`
+	PublicKeys [][]byte `protobuf:"bytes,3,rep,name=public_keys,json=publicKeys,proto3" json:"public_keys,omitempty"`
+}
+
+func (m *AddPublicKeysRequest) Reset()                    { *m = AddPublicKeysRequest{} }
+func (m *AddPublicKeysRequest) String() string            { return proto.CompactTextString(m) }
+func (*AddPublicKeysRequest) ProtoMessage()               {}
+func (*AddPublicKeysRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{10} }
+
+func (m *AddPublicKeysRequest) GetEntityId() string {
+	if m != nil {
+		return m.EntityId
+	}
+	return ""
+}
+
+func (m *AddPublicKeysRequest) GetKeyType() KeyType {
+	if m != nil {
+		return m.KeyType
+	}
+	return KeyType_AUTHOR
+}
+
+func (m *AddPublicKeysRequest) GetPublicKeys() [][]byte {
+	if m != nil {
+		return m.PublicKeys
+	}
+	return nil
+}
+
+type AddPublicKeysResponse struct {
+}
+
+func (m *AddPublicKeysResponse) Reset()                    { *m = AddPublicKeysResponse{} }
+func (m *AddPublicKeysResponse) String() string            { return proto.CompactTextString(m) }
+func (*AddPublicKeysResponse) ProtoMessage()               {}
+func (*AddPublicKeysResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{11} }
+
+type GetPublicKeyDetailsRequest struct {
+	PublicKeys [][]byte `protobuf:"bytes,3,rep,name=public_keys,json=publicKeys,proto3" json:"public_keys,omitempty"`
+}
+
+func (m *GetPublicKeyDetailsRequest) Reset()                    { *m = GetPublicKeyDetailsRequest{} }
+func (m *GetPublicKeyDetailsRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetPublicKeyDetailsRequest) ProtoMessage()               {}
+func (*GetPublicKeyDetailsRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{12} }
+
+func (m *GetPublicKeyDetailsRequest) GetPublicKeys() [][]byte {
+	if m != nil {
+		return m.PublicKeys
+	}
+	return nil
+}
+
+type GetPublicKeyDetailsResponse struct {
+	PublicKeyDetails []*PublicKeyDetail `protobuf:"bytes,1,rep,name=public_key_details,json=publicKeyDetails" json:"public_key_details,omitempty"`
+}
+
+func (m *GetPublicKeyDetailsResponse) Reset()                    { *m = GetPublicKeyDetailsResponse{} }
+func (m *GetPublicKeyDetailsResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetPublicKeyDetailsResponse) ProtoMessage()               {}
+func (*GetPublicKeyDetailsResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{13} }
+
+func (m *GetPublicKeyDetailsResponse) GetPublicKeyDetails() []*PublicKeyDetail {
+	if m != nil {
+		return m.PublicKeyDetails
+	}
+	return nil
+}
+
+type GetPublicKeysRequest struct {
+	EntityId string  `protobuf:"bytes,1,opt,name=entity_id,json=entityId" json:"entity_id,omitempty"`
+	KeyType  KeyType `protobuf:"varint,2,opt,name=key_type,json=keyType,enum=entityapi.KeyType" json:"key_type,omitempty"`
+}
+
+func (m *GetPublicKeysRequest) Reset()                    { *m = GetPublicKeysRequest{} }
+func (m *GetPublicKeysRequest) String() string            { return proto.CompactTextString(m) }
+func (*GetPublicKeysRequest) ProtoMessage()               {}
+func (*GetPublicKeysRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{14} }
+
+func (m *GetPublicKeysRequest) GetEntityId() string {
+	if m != nil {
+		return m.EntityId
+	}
+	return ""
+}
+
+func (m *GetPublicKeysRequest) GetKeyType() KeyType {
+	if m != nil {
+		return m.KeyType
+	}
+	return KeyType_AUTHOR
+}
+
+type GetPublicKeysResponse struct {
+	PublicKeys [][]byte `protobuf:"bytes,3,rep,name=public_keys,json=publicKeys,proto3" json:"public_keys,omitempty"`
+}
+
+func (m *GetPublicKeysResponse) Reset()                    { *m = GetPublicKeysResponse{} }
+func (m *GetPublicKeysResponse) String() string            { return proto.CompactTextString(m) }
+func (*GetPublicKeysResponse) ProtoMessage()               {}
+func (*GetPublicKeysResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{15} }
+
+func (m *GetPublicKeysResponse) GetPublicKeys() [][]byte {
+	if m != nil {
+		return m.PublicKeys
+	}
+	return nil
+}
+
+type SamplePublicKeysRequest struct {
+	OfEntityId        string `protobuf:"bytes,1,opt,name=of_entity_id,json=ofEntityId" json:"of_entity_id,omitempty"`
+	RequesterEntityId string `protobuf:"bytes,2,opt,name=requester_entity_id,json=requesterEntityId" json:"requester_entity_id,omitempty"`
+	NPublicKeys       uint32 `protobuf:"varint,3,opt,name=n_public_keys,json=nPublicKeys" json:"n_public_keys,omitempty"`
+}
+
+func (m *SamplePublicKeysRequest) Reset()                    { *m = SamplePublicKeysRequest{} }
+func (m *SamplePublicKeysRequest) String() string            { return proto.CompactTextString(m) }
+func (*SamplePublicKeysRequest) ProtoMessage()               {}
+func (*SamplePublicKeysRequest) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{16} }
+
+func (m *SamplePublicKeysRequest) GetOfEntityId() string {
+	if m != nil {
+		return m.OfEntityId
+	}
+	return ""
+}
+
+func (m *SamplePublicKeysRequest) GetRequesterEntityId() string {
+	if m != nil {
+		return m.RequesterEntityId
+	}
+	return ""
+}
+
+func (m *SamplePublicKeysRequest) GetNPublicKeys() uint32 {
+	if m != nil {
+		return m.NPublicKeys
+	}
+	return 0
+}
+
+type SamplePublicKeysResponse struct {
+	PublicKeyDetails []*PublicKeyDetail `protobuf:"bytes,1,rep,name=public_key_details,json=publicKeyDetails" json:"public_key_details,omitempty"`
+}
+
+func (m *SamplePublicKeysResponse) Reset()                    { *m = SamplePublicKeysResponse{} }
+func (m *SamplePublicKeysResponse) String() string            { return proto.CompactTextString(m) }
+func (*SamplePublicKeysResponse) ProtoMessage()               {}
+func (*SamplePublicKeysResponse) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{17} }
+
+func (m *SamplePublicKeysResponse) GetPublicKeyDetails() []*PublicKeyDetail {
+	if m != nil {
+		return m.PublicKeyDetails
+	}
+	return nil
+}
+
+type PublicKeyDetail struct {
+	PublicKey []byte  `protobuf:"bytes,1,opt,name=public_key,json=publicKey,proto3" json:"public_key,omitempty"`
+	EntityId  string  `protobuf:"bytes,2,opt,name=entity_id,json=entityId" json:"entity_id,omitempty"`
+	KeyType   KeyType `protobuf:"varint,3,opt,name=key_type,json=keyType,enum=entityapi.KeyType" json:"key_type,omitempty"`
+}
+
+func (m *PublicKeyDetail) Reset()                    { *m = PublicKeyDetail{} }
+func (m *PublicKeyDetail) String() string            { return proto.CompactTextString(m) }
+func (*PublicKeyDetail) ProtoMessage()               {}
+func (*PublicKeyDetail) Descriptor() ([]byte, []int) { return fileDescriptor0, []int{18} }
+
+func (m *PublicKeyDetail) GetPublicKey() []byte {
+	if m != nil {
+		return m.PublicKey
+	}
+	return nil
+}
+
+func (m *PublicKeyDetail) GetEntityId() string {
+	if m != nil {
+		return m.EntityId
+	}
+	return ""
+}
+
+func (m *PublicKeyDetail) GetKeyType() KeyType {
+	if m != nil {
+		return m.KeyType
+	}
+	return KeyType_AUTHOR
+}
+
+func init() {
+	proto.RegisterType((*PutEntityRequest)(nil), "entityapi.PutEntityRequest")
+	proto.RegisterType((*PutEntityResponse)(nil), "entityapi.PutEntityResponse")
+	proto.RegisterType((*GetEntityRequest)(nil), "entityapi.GetEntityRequest")
+	proto.RegisterType((*GetEntityResponse)(nil), "entityapi.GetEntityResponse")
+	proto.RegisterType((*SearchEntityRequest)(nil), "entityapi.SearchEntityRequest")
+	proto.RegisterType((*SearchEntityResponse)(nil), "entityapi.SearchEntityResponse")
+	proto.RegisterType((*EntityDetail)(nil), "entityapi.EntityDetail")
+	proto.RegisterType((*PatientAttributes)(nil), "entityapi.PatientAttributes")
+	proto.RegisterType((*OfficeAttributes)(nil), "entityapi.OfficeAttributes")
+	proto.RegisterType((*Date)(nil), "entityapi.Date")
+	proto.RegisterType((*AddPublicKeysRequest)(nil), "entityapi.AddPublicKeysRequest")
+	proto.RegisterType((*AddPublicKeysResponse)(nil), "entityapi.AddPublicKeysResponse")
+	proto.RegisterType((*GetPublicKeyDetailsRequest)(nil), "entityapi.GetPublicKeyDetailsRequest")
+	proto.RegisterType((*GetPublicKeyDetailsResponse)(nil), "entityapi.GetPublicKeyDetailsResponse")
+	proto.RegisterType((*GetPublicKeysRequest)(nil), "entityapi.GetPublicKeysRequest")
+	proto.RegisterType((*GetPublicKeysResponse)(nil), "entityapi.GetPublicKeysResponse")
+	proto.RegisterType((*SamplePublicKeysRequest)(nil), "entityapi.SamplePublicKeysRequest")
+	proto.RegisterType((*SamplePublicKeysResponse)(nil), "entityapi.SamplePublicKeysResponse")
+	proto.RegisterType((*PublicKeyDetail)(nil), "entityapi.PublicKeyDetail")
+	proto.RegisterEnum("entityapi.KeyType", KeyType_name, KeyType_value)
+}
+
 // Reference imports to suppress errors if they are not otherwise used.
 var _ context.Context
 var _ grpc.ClientConn
@@ -42,6 +626,21 @@ const _ = grpc.SupportPackageIsVersion4
 // Client API for Entity service
 
 type EntityClient interface {
+	// PutEntity adds a new or updates an existing entity.
+	PutEntity(ctx context.Context, in *PutEntityRequest, opts ...grpc.CallOption) (*PutEntityResponse, error)
+	// GetEntity returns an existing entity with the given entity ID.
+	GetEntity(ctx context.Context, in *GetEntityRequest, opts ...grpc.CallOption) (*GetEntityResponse, error)
+	// SearchEntity searches for entities matching the given query.
+	SearchEntity(ctx context.Context, in *SearchEntityRequest, opts ...grpc.CallOption) (*SearchEntityResponse, error)
+	// AddPublicKeys adds a set of public keys for a given entity.
+	AddPublicKeys(ctx context.Context, in *AddPublicKeysRequest, opts ...grpc.CallOption) (*AddPublicKeysResponse, error)
+	// GetPublicKeys gets the public keys for a given entity.
+	GetPublicKeys(ctx context.Context, in *GetPublicKeysRequest, opts ...grpc.CallOption) (*GetPublicKeysResponse, error)
+	// SamplePublicKeys returns a sample of an entity's public keys for a particular requestor
+	// entity.
+	SamplePublicKeys(ctx context.Context, in *SamplePublicKeysRequest, opts ...grpc.CallOption) (*SamplePublicKeysResponse, error)
+	// GetPublicKeyDetails returns the details for a list of public keys.
+	GetPublicKeyDetails(ctx context.Context, in *GetPublicKeyDetailsRequest, opts ...grpc.CallOption) (*GetPublicKeyDetailsResponse, error)
 }
 
 type entityClient struct {
@@ -52,29 +651,308 @@ func NewEntityClient(cc *grpc.ClientConn) EntityClient {
 	return &entityClient{cc}
 }
 
+func (c *entityClient) PutEntity(ctx context.Context, in *PutEntityRequest, opts ...grpc.CallOption) (*PutEntityResponse, error) {
+	out := new(PutEntityResponse)
+	err := grpc.Invoke(ctx, "/entityapi.Entity/PutEntity", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entityClient) GetEntity(ctx context.Context, in *GetEntityRequest, opts ...grpc.CallOption) (*GetEntityResponse, error) {
+	out := new(GetEntityResponse)
+	err := grpc.Invoke(ctx, "/entityapi.Entity/GetEntity", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entityClient) SearchEntity(ctx context.Context, in *SearchEntityRequest, opts ...grpc.CallOption) (*SearchEntityResponse, error) {
+	out := new(SearchEntityResponse)
+	err := grpc.Invoke(ctx, "/entityapi.Entity/SearchEntity", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entityClient) AddPublicKeys(ctx context.Context, in *AddPublicKeysRequest, opts ...grpc.CallOption) (*AddPublicKeysResponse, error) {
+	out := new(AddPublicKeysResponse)
+	err := grpc.Invoke(ctx, "/entityapi.Entity/AddPublicKeys", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entityClient) GetPublicKeys(ctx context.Context, in *GetPublicKeysRequest, opts ...grpc.CallOption) (*GetPublicKeysResponse, error) {
+	out := new(GetPublicKeysResponse)
+	err := grpc.Invoke(ctx, "/entityapi.Entity/GetPublicKeys", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entityClient) SamplePublicKeys(ctx context.Context, in *SamplePublicKeysRequest, opts ...grpc.CallOption) (*SamplePublicKeysResponse, error) {
+	out := new(SamplePublicKeysResponse)
+	err := grpc.Invoke(ctx, "/entityapi.Entity/SamplePublicKeys", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *entityClient) GetPublicKeyDetails(ctx context.Context, in *GetPublicKeyDetailsRequest, opts ...grpc.CallOption) (*GetPublicKeyDetailsResponse, error) {
+	out := new(GetPublicKeyDetailsResponse)
+	err := grpc.Invoke(ctx, "/entityapi.Entity/GetPublicKeyDetails", in, out, c.cc, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // Server API for Entity service
 
 type EntityServer interface {
+	// PutEntity adds a new or updates an existing entity.
+	PutEntity(context.Context, *PutEntityRequest) (*PutEntityResponse, error)
+	// GetEntity returns an existing entity with the given entity ID.
+	GetEntity(context.Context, *GetEntityRequest) (*GetEntityResponse, error)
+	// SearchEntity searches for entities matching the given query.
+	SearchEntity(context.Context, *SearchEntityRequest) (*SearchEntityResponse, error)
+	// AddPublicKeys adds a set of public keys for a given entity.
+	AddPublicKeys(context.Context, *AddPublicKeysRequest) (*AddPublicKeysResponse, error)
+	// GetPublicKeys gets the public keys for a given entity.
+	GetPublicKeys(context.Context, *GetPublicKeysRequest) (*GetPublicKeysResponse, error)
+	// SamplePublicKeys returns a sample of an entity's public keys for a particular requestor
+	// entity.
+	SamplePublicKeys(context.Context, *SamplePublicKeysRequest) (*SamplePublicKeysResponse, error)
+	// GetPublicKeyDetails returns the details for a list of public keys.
+	GetPublicKeyDetails(context.Context, *GetPublicKeyDetailsRequest) (*GetPublicKeyDetailsResponse, error)
 }
 
 func RegisterEntityServer(s *grpc.Server, srv EntityServer) {
 	s.RegisterService(&_Entity_serviceDesc, srv)
 }
 
+func _Entity_PutEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(PutEntityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServer).PutEntity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/entityapi.Entity/PutEntity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServer).PutEntity(ctx, req.(*PutEntityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entity_GetEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetEntityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServer).GetEntity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/entityapi.Entity/GetEntity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServer).GetEntity(ctx, req.(*GetEntityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entity_SearchEntity_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SearchEntityRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServer).SearchEntity(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/entityapi.Entity/SearchEntity",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServer).SearchEntity(ctx, req.(*SearchEntityRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entity_AddPublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(AddPublicKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServer).AddPublicKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/entityapi.Entity/AddPublicKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServer).AddPublicKeys(ctx, req.(*AddPublicKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entity_GetPublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPublicKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServer).GetPublicKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/entityapi.Entity/GetPublicKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServer).GetPublicKeys(ctx, req.(*GetPublicKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entity_SamplePublicKeys_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SamplePublicKeysRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServer).SamplePublicKeys(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/entityapi.Entity/SamplePublicKeys",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServer).SamplePublicKeys(ctx, req.(*SamplePublicKeysRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _Entity_GetPublicKeyDetails_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(GetPublicKeyDetailsRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(EntityServer).GetPublicKeyDetails(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/entityapi.Entity/GetPublicKeyDetails",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(EntityServer).GetPublicKeyDetails(ctx, req.(*GetPublicKeyDetailsRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 var _Entity_serviceDesc = grpc.ServiceDesc{
 	ServiceName: "entityapi.Entity",
 	HandlerType: (*EntityServer)(nil),
-	Methods:     []grpc.MethodDesc{},
-	Streams:     []grpc.StreamDesc{},
-	Metadata:    "pkg/entityapi/entity.proto",
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "PutEntity",
+			Handler:    _Entity_PutEntity_Handler,
+		},
+		{
+			MethodName: "GetEntity",
+			Handler:    _Entity_GetEntity_Handler,
+		},
+		{
+			MethodName: "SearchEntity",
+			Handler:    _Entity_SearchEntity_Handler,
+		},
+		{
+			MethodName: "AddPublicKeys",
+			Handler:    _Entity_AddPublicKeys_Handler,
+		},
+		{
+			MethodName: "GetPublicKeys",
+			Handler:    _Entity_GetPublicKeys_Handler,
+		},
+		{
+			MethodName: "SamplePublicKeys",
+			Handler:    _Entity_SamplePublicKeys_Handler,
+		},
+		{
+			MethodName: "GetPublicKeyDetails",
+			Handler:    _Entity_GetPublicKeyDetails_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "pkg/entityapi/entity.proto",
 }
 
 func init() { proto.RegisterFile("pkg/entityapi/entity.proto", fileDescriptor0) }
 
 var fileDescriptor0 = []byte{
-	// 62 bytes of a gzipped FileDescriptorProto
-	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xe2, 0x92, 0x2a, 0xc8, 0x4e, 0xd7,
-	0x4f, 0xcd, 0x2b, 0xc9, 0x2c, 0xa9, 0x4c, 0x2c, 0xc8, 0x84, 0xb2, 0xf4, 0x0a, 0x8a, 0xf2, 0x4b,
-	0xf2, 0x85, 0x38, 0xe1, 0xe2, 0x46, 0x1c, 0x5c, 0x6c, 0xae, 0x60, 0x4e, 0x12, 0x1b, 0x58, 0xce,
-	0x18, 0x10, 0x00, 0x00, 0xff, 0xff, 0xfa, 0x9f, 0xde, 0x66, 0x39, 0x00, 0x00, 0x00,
+	// 791 bytes of a gzipped FileDescriptorProto
+	0x1f, 0x8b, 0x08, 0x00, 0x00, 0x00, 0x00, 0x00, 0x02, 0xff, 0xb4, 0x56, 0xdd, 0x4e, 0xdb, 0x4c,
+	0x10, 0x8d, 0x49, 0x08, 0x64, 0x92, 0x7c, 0x38, 0x4b, 0xf8, 0xb0, 0x1c, 0x5a, 0xd2, 0xad, 0x8a,
+	0x50, 0x25, 0x42, 0x15, 0x54, 0x89, 0x9b, 0x5e, 0x84, 0x26, 0x22, 0x15, 0x52, 0xa1, 0x86, 0x5e,
+	0x56, 0x91, 0x83, 0xd7, 0x60, 0xe5, 0xcf, 0xd8, 0x1b, 0xa9, 0x96, 0x7a, 0xd7, 0x07, 0xe8, 0x7b,
+	0xf4, 0x05, 0xfa, 0x3e, 0x7d, 0x92, 0xca, 0xbb, 0x8e, 0xb3, 0xeb, 0x98, 0xa4, 0x95, 0xda, 0xbb,
+	0xdd, 0x39, 0x67, 0x66, 0xce, 0xec, 0xce, 0x78, 0x0d, 0xba, 0x3b, 0xb8, 0x3b, 0x26, 0x63, 0xea,
+	0xd0, 0xc0, 0x74, 0x9d, 0x68, 0xd5, 0x70, 0xbd, 0x09, 0x9d, 0xa0, 0x42, 0x6c, 0xc7, 0x6f, 0x41,
+	0xbd, 0x9a, 0xd2, 0x0e, 0xdb, 0x1b, 0xe4, 0x61, 0x4a, 0x7c, 0x8a, 0x8e, 0x21, 0xcf, 0x09, 0x9a,
+	0x52, 0x57, 0x0e, 0x8b, 0xcd, 0xdd, 0x46, 0xcc, 0x6f, 0x70, 0x66, 0x9b, 0x50, 0xd3, 0x19, 0x1a,
+	0x11, 0x0d, 0xbf, 0x82, 0x8a, 0x10, 0xc4, 0x77, 0x27, 0x63, 0x9f, 0xa0, 0x1a, 0x44, 0x69, 0x7a,
+	0x8e, 0xc5, 0x02, 0x15, 0x8c, 0x4d, 0x6e, 0x78, 0x67, 0xe1, 0x63, 0x50, 0xcf, 0x49, 0x22, 0xed,
+	0x52, 0x87, 0x36, 0x54, 0x04, 0x87, 0x28, 0xc5, 0x1f, 0x0b, 0x6d, 0xc1, 0xf6, 0x35, 0x31, 0xbd,
+	0xdb, 0x7b, 0x39, 0x73, 0x15, 0xd6, 0x1f, 0xa6, 0xc4, 0x0b, 0xa2, 0xac, 0x7c, 0x13, 0x5a, 0x87,
+	0xce, 0xc8, 0xa1, 0xda, 0x5a, 0x5d, 0x39, 0x2c, 0x1b, 0x7c, 0x83, 0x2f, 0xa0, 0x2a, 0x87, 0x88,
+	0xb4, 0x9c, 0x00, 0x17, 0xeb, 0x10, 0x5f, 0x53, 0xea, 0xd9, 0x65, 0x6a, 0x62, 0x22, 0xfe, 0xae,
+	0x40, 0x49, 0x84, 0x96, 0x9e, 0x01, 0x3a, 0x85, 0x0d, 0xd7, 0xa4, 0x0e, 0x19, 0x73, 0x49, 0xc5,
+	0xe6, 0x9e, 0x90, 0xe1, 0x8a, 0x23, 0x2d, 0x4a, 0x3d, 0xa7, 0x3f, 0xa5, 0xc4, 0xef, 0x66, 0x8c,
+	0x19, 0x1d, 0xbd, 0x86, 0xfc, 0xc4, 0xb6, 0x9d, 0x5b, 0xa2, 0x65, 0x99, 0x63, 0x4d, 0x70, 0xbc,
+	0x64, 0x80, 0xe4, 0x17, 0x91, 0xcf, 0x4a, 0x00, 0x66, 0x6c, 0xc7, 0x3f, 0x14, 0xa8, 0x2c, 0x64,
+	0x09, 0x15, 0x0f, 0x4d, 0x9f, 0xf6, 0xc6, 0xe6, 0x88, 0xcc, 0x14, 0x87, 0x86, 0xf7, 0xe6, 0x88,
+	0xa0, 0x27, 0x00, 0xb6, 0xe3, 0xcd, 0xd0, 0x35, 0x86, 0x16, 0x98, 0x85, 0xc1, 0xfb, 0x50, 0x1c,
+	0x39, 0x96, 0x35, 0x24, 0x1c, 0xcf, 0x32, 0x1c, 0xb8, 0x89, 0x11, 0xfe, 0x87, 0xbc, 0x3f, 0xb5,
+	0x6d, 0xe7, 0xb3, 0x96, 0x63, 0x58, 0xb4, 0x43, 0x47, 0x50, 0xe8, 0x3b, 0x1e, 0xbd, 0xb7, 0x4c,
+	0x4a, 0xb4, 0x75, 0x56, 0xd2, 0x96, 0x50, 0x52, 0xdb, 0xa4, 0xc4, 0x98, 0x33, 0xf0, 0x01, 0xa8,
+	0xc9, 0x2a, 0x11, 0x82, 0x9c, 0x20, 0x99, 0xad, 0xf1, 0x19, 0xe4, 0x42, 0xd7, 0x10, 0x0b, 0x88,
+	0xe9, 0x31, 0xac, 0x6c, 0xb0, 0x75, 0xd8, 0x0d, 0xa3, 0xc9, 0x98, 0xde, 0xcf, 0xba, 0x81, 0x6d,
+	0x90, 0x0a, 0x59, 0xcb, 0x0c, 0x98, 0xf2, 0xb2, 0x11, 0x2e, 0xf1, 0x57, 0x05, 0xaa, 0x2d, 0xcb,
+	0xba, 0x9a, 0xf6, 0x87, 0xce, 0xed, 0x05, 0x09, 0xfc, 0xdf, 0x69, 0x6f, 0x74, 0x04, 0x9b, 0x03,
+	0x12, 0xf4, 0x68, 0xe0, 0xf2, 0x63, 0xfa, 0xaf, 0x89, 0x84, 0x7a, 0x2e, 0x48, 0x70, 0x13, 0xb8,
+	0xc4, 0xd8, 0x18, 0xf0, 0x45, 0x78, 0x70, 0x2e, 0x4b, 0xd0, 0x1b, 0x90, 0xc0, 0xd7, 0xb2, 0xf5,
+	0xec, 0x61, 0xc9, 0x00, 0x37, 0xce, 0x89, 0x77, 0x61, 0x27, 0x21, 0x82, 0xb7, 0x29, 0x7e, 0x03,
+	0xfa, 0x39, 0xa1, 0x31, 0xc0, 0xdb, 0x2e, 0xd6, 0xb8, 0x32, 0xee, 0x1d, 0xd4, 0x52, 0xdd, 0xa3,
+	0x21, 0xe8, 0x02, 0x9a, 0xfb, 0xf7, 0x2c, 0x8e, 0x46, 0xe3, 0xa0, 0x8b, 0xcd, 0x2a, 0x07, 0x30,
+	0x54, 0x37, 0x11, 0x11, 0xf7, 0xa1, 0x2a, 0x26, 0xfa, 0x17, 0xa7, 0x88, 0x4f, 0x61, 0x27, 0x91,
+	0x23, 0x2a, 0x63, 0xe5, 0x31, 0x7c, 0x53, 0x60, 0xf7, 0xda, 0x1c, 0xb9, 0x43, 0xb2, 0xa8, 0xb0,
+	0x0e, 0xa5, 0x89, 0xdd, 0x4b, 0x8a, 0x84, 0x89, 0xdd, 0x99, 0xc9, 0x6c, 0xc0, 0xb6, 0xc7, 0xc9,
+	0xc4, 0x13, 0x88, 0x7c, 0x3c, 0x2a, 0x31, 0x14, 0xf3, 0x31, 0x94, 0xc7, 0x3d, 0x59, 0x50, 0xd8,
+	0x6e, 0xc5, 0xf1, 0x3c, 0x39, 0xb6, 0x40, 0x5b, 0x14, 0xf4, 0xd7, 0x6f, 0xe5, 0x0b, 0x6c, 0x25,
+	0x48, 0xe1, 0x88, 0xcf, 0x83, 0xb3, 0x62, 0x4b, 0x46, 0x21, 0x76, 0x94, 0xef, 0x6b, 0x6d, 0xc9,
+	0x7d, 0x65, 0x57, 0xde, 0xd7, 0xcb, 0x67, 0xb0, 0x11, 0xd9, 0x10, 0x40, 0xbe, 0xf5, 0xf1, 0xa6,
+	0x7b, 0x69, 0xa8, 0x99, 0x70, 0x6d, 0x74, 0x5a, 0xed, 0x8e, 0xa1, 0x2a, 0xcd, 0x9f, 0x39, 0xc8,
+	0xf3, 0x73, 0x43, 0x5d, 0x28, 0xc4, 0x8f, 0x12, 0xaa, 0x49, 0x65, 0xca, 0x0f, 0x8f, 0xbe, 0x97,
+	0x0e, 0x46, 0x13, 0x93, 0x09, 0x23, 0xc5, 0x6f, 0x8f, 0x14, 0x29, 0xf9, 0x84, 0x49, 0x91, 0x16,
+	0x9e, 0x2b, 0x9c, 0x41, 0x1f, 0xa0, 0x24, 0x3e, 0x1e, 0xe8, 0xa9, 0xc0, 0x4f, 0x79, 0x98, 0xf4,
+	0xfd, 0x47, 0xf1, 0x38, 0xe4, 0x0d, 0x94, 0xa5, 0x49, 0x47, 0xa2, 0x4f, 0xda, 0x87, 0x48, 0xaf,
+	0x3f, 0x4e, 0x10, 0xa3, 0x4a, 0xa3, 0x21, 0x45, 0x4d, 0x1b, 0x4c, 0x29, 0x6a, 0xea, 0x54, 0xe1,
+	0x0c, 0xfa, 0x04, 0x6a, 0xb2, 0x49, 0x11, 0x16, 0x4b, 0x4c, 0x1f, 0x29, 0xfd, 0xf9, 0x52, 0x4e,
+	0x1c, 0xde, 0x86, 0xed, 0x94, 0x8f, 0x13, 0x7a, 0xf1, 0x88, 0x32, 0xf9, 0xdb, 0xa7, 0x1f, 0xac,
+	0xa2, 0xcd, 0xf2, 0xf4, 0xf3, 0xec, 0x2f, 0xea, 0xe4, 0x57, 0x00, 0x00, 0x00, 0xff, 0xff, 0x31,
+	0xde, 0x58, 0x7a, 0x63, 0x09, 0x00, 0x00,
 }

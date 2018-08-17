@@ -1,33 +1,40 @@
 package cmd
 
 import (
+	"errors"
 	"log"
+	"os"
 
-	"github.com/drausin/libri/libri/common/errors"
+	cerrors "github.com/drausin/libri/libri/common/errors"
 	"github.com/drausin/libri/libri/common/logging"
 	"github.com/elixirhealth/entity/pkg/server"
 	"github.com/elixirhealth/entity/version"
 	"github.com/elixirhealth/service-base/pkg/cmd"
 	bserver "github.com/elixirhealth/service-base/pkg/server"
+	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
+	"go.uber.org/zap"
 )
 
 const (
-	serviceNameLower = "entity"
-	serviceNameCamel = "Entity"
-	envVarPrefix     = "ENTITY"
-	logLevelFlag     = "logLevel"
-
-	// TODO uncomment or delete
-	//storageMemoryFlag    = "storageMemory"
-	//storageDataStoreFlag = "storageDataStore"
-	//storagePostgresFlag  = "storagePostgres"
-	//dbURLFlag            = "dbURL"
+	serviceNameLower    = "entity"
+	serviceNameCamel    = "Entity"
+	envVarPrefix        = "ENTITY"
+	logLevelFlag        = "logLevel"
+	storageMemoryFlag   = "storageMemory"
+	storagePostgresFlag = "storagePostgres"
+	dbURLFlag           = "dbURL"
+	timeoutFlag         = "timeout"
+	nEntitiesFlag       = "nEntities"
+	nSearchesFlag       = "nSearches"
 )
 
 var (
+	errMultipleStorageTypes = errors.New("multiple storage types specified")
+	errNoStorageType        = errors.New("no storage type specified")
+
 	rootCmd = &cobra.Command{
 		Short: "TODO", // TODO
 	}
@@ -39,17 +46,16 @@ func init() {
 
 	cmd.Start(serviceNameLower, serviceNameCamel, rootCmd, version.Current, start,
 		func(flags *pflag.FlagSet) {
-			// TODO define other flags here if needed, e.g.,
-			//flags.Bool(storageMemoryFlag, true, "use in-memory storage")
-			//flags.Bool(storageDataStoreFlag, false, "use GCP DataStore storage")
-			//flags.Bool(storagePostgresFlag, false, "use Postgres DB storage")
-			//flags.String(dbURLFlag, "", "Postgres DB URL")
+			flags.Bool(storageMemoryFlag, true, "use in-memory storage")
+			flags.Bool(storagePostgresFlag, false, "use Postgres DB storage")
+			flags.String(dbURLFlag, "", "Postgres DB URL")
 		})
 
 	testCmd := cmd.Test(serviceNameLower, rootCmd)
 	cmd.TestHealth(serviceNameLower, testCmd)
 	cmd.TestIO(serviceNameLower, testCmd, testIO, func(flags *pflag.FlagSet) {
-		// TODO define other flags here if needed
+		flags.Uint(nEntitiesFlag, 32, "number of entities to put into the directory")
+		flags.Uint(nSearchesFlag, 16, "number of searches to perform")
 	})
 
 	cmd.Version(serviceNameLower, rootCmd, version.Current)
@@ -57,7 +63,7 @@ func init() {
 	// bind viper flags
 	viper.SetEnvPrefix(envVarPrefix) // look for env vars with prefix
 	viper.AutomaticEnv()             // read in environment variables that match
-	errors.MaybePanic(viper.BindPFlags(rootCmd.Flags()))
+	cerrors.MaybePanic(viper.BindPFlags(rootCmd.Flags()))
 }
 
 // Execute runs the root entity command.
@@ -68,6 +74,7 @@ func Execute() {
 }
 
 func start() error {
+	writeBanner(os.Stdout)
 	config, err := getEntityConfig()
 	if err != nil {
 		return err
@@ -76,13 +83,34 @@ func start() error {
 }
 
 func getEntityConfig() (*server.Config, error) {
+	storageType, err := getStorageType()
+	if err != nil {
+		return nil, err
+	}
 	c := server.NewDefaultConfig()
 	c.WithServerPort(uint(viper.GetInt(cmd.ServerPortFlag))).
 		WithMetricsPort(uint(viper.GetInt(cmd.MetricsPortFlag))).
 		WithProfilerPort(uint(viper.GetInt(cmd.ProfilerPortFlag))).
 		WithLogLevel(logging.GetLogLevel(viper.GetString(logLevelFlag))).
 		WithProfile(viper.GetBool(cmd.ProfileFlag))
-	// TODO set other config elements here
+
+	c.Storage.Type = storageType
+	c.WithDBUrl(viper.GetString(dbURLFlag))
+
+	lg := logging.NewDevLogger(c.LogLevel)
+	lg.Info("successfully parsed config", zap.Object("config", c))
 
 	return c, nil
+}
+func getStorageType() (bstorage.Type, error) {
+	if viper.GetBool(storageMemoryFlag) && viper.GetBool(storagePostgresFlag) {
+		return bstorage.Unspecified, errMultipleStorageTypes
+	}
+	if viper.GetBool(storageMemoryFlag) {
+		return bstorage.Memory, nil
+	}
+	if viper.GetBool(storagePostgresFlag) {
+		return bstorage.Postgres, nil
+	}
+	return bstorage.Unspecified, errNoStorageType
 }

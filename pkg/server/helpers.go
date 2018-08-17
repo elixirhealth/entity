@@ -4,6 +4,9 @@ import (
 	"errors"
 
 	"github.com/elixirhealth/entity/pkg/server/storage"
+	"github.com/elixirhealth/entity/pkg/server/storage/id"
+	memstorage "github.com/elixirhealth/entity/pkg/server/storage/memory"
+	pgstorage "github.com/elixirhealth/entity/pkg/server/storage/postgres"
 	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"go.uber.org/zap"
 )
@@ -14,10 +17,12 @@ var (
 )
 
 func getStorer(config *Config, logger *zap.Logger) (storage.Storer, error) {
+	idGen := id.NewDefaultGenerator()
 	switch config.Storage.Type {
 	case bstorage.Memory:
-		return nil, nil
-	// TODO add case statemnts for different valid Storage types
+		return memstorage.New(idGen, config.Storage, logger), nil
+	case bstorage.Postgres:
+		return pgstorage.New(config.DBUrl, idGen, config.Storage, logger)
 	default:
 		return nil, ErrInvalidStorageType
 	}
