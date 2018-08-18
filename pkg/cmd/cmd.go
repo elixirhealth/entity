@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"os"
 
@@ -26,7 +27,7 @@ const (
 	storageMemoryFlag   = "storageMemory"
 	storagePostgresFlag = "storagePostgres"
 	dbURLFlag           = "dbURL"
-	timeoutFlag         = "timeout"
+	dbPasswordFlag      = "dbPassword"
 	nEntitiesFlag       = "nEntities"
 	nSearchesFlag       = "nSearches"
 )
@@ -54,8 +55,8 @@ func init() {
 	testCmd := cmd.Test(serviceNameLower, rootCmd)
 	cmd.TestHealth(serviceNameLower, testCmd)
 	cmd.TestIO(serviceNameLower, testCmd, testIO, func(flags *pflag.FlagSet) {
-		flags.Uint(nEntitiesFlag, 32, "number of entities to put into the directory")
-		flags.Uint(nSearchesFlag, 16, "number of searches to perform")
+		flags.Uint(nEntitiesFlag, 32, "number of test entities to create")
+		flags.Uint(nSearchesFlag, 16, "number of test searches to perform")
 	})
 
 	cmd.Version(serviceNameLower, rootCmd, version.Current)
@@ -95,13 +96,23 @@ func getEntityConfig() (*server.Config, error) {
 		WithProfile(viper.GetBool(cmd.ProfileFlag))
 
 	c.Storage.Type = storageType
-	c.WithDBUrl(viper.GetString(dbURLFlag))
+	c.DBUrl = getDBUrl()
 
 	lg := logging.NewDevLogger(c.LogLevel)
 	lg.Info("successfully parsed config", zap.Object("config", c))
 
 	return c, nil
 }
+
+func getDBUrl() string {
+	dbURL := viper.GetString(dbURLFlag)
+	if dbPass := viper.GetString(dbPasswordFlag); dbPass != "" {
+		// append pw to URL args
+		return fmt.Sprintf("%s&password=%s", dbURL, dbPass)
+	}
+	return dbURL
+}
+
 func getStorageType() (bstorage.Type, error) {
 	if viper.GetBool(storageMemoryFlag) && viper.GetBool(storagePostgresFlag) {
 		return bstorage.Unspecified, errMultipleStorageTypes

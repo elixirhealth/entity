@@ -12,6 +12,14 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestNewDefaultParameters(t *testing.T) {
+	p := NewDefaultParameters()
+	assert.NotNil(t, p)
+	assert.NotEmpty(t, p.Type)
+	assert.NotEmpty(t, p.Timeout)
+	assert.NotEmpty(t, p.MaxBatchSize)
+}
+
 func TestEntitySims(t *testing.T) {
 	searchName := "Search1"
 	es1 := NewEntitySim(&api.EntityDetail{EntityId: "entity1"})

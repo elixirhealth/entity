@@ -3,12 +3,15 @@ package server
 import (
 	"errors"
 
+	api "github.com/elixirhealth/entity/pkg/entityapi"
 	"github.com/elixirhealth/entity/pkg/server/storage"
 	"github.com/elixirhealth/entity/pkg/server/storage/id"
 	memstorage "github.com/elixirhealth/entity/pkg/server/storage/memory"
 	pgstorage "github.com/elixirhealth/entity/pkg/server/storage/postgres"
 	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 	"go.uber.org/zap"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 var (
@@ -26,4 +29,20 @@ func getStorer(config *Config, logger *zap.Logger) (storage.Storer, error) {
 	default:
 		return nil, ErrInvalidStorageType
 	}
+}
+
+func getPublicKeyDetails(rq *api.AddPublicKeysRequest) []*api.PublicKeyDetail {
+	pkds := make([]*api.PublicKeyDetail, len(rq.PublicKeys))
+	for i, pk := range rq.PublicKeys {
+		pkds[i] = &api.PublicKeyDetail{
+			PublicKey: pk,
+			EntityId:  rq.EntityId,
+			KeyType:   rq.KeyType,
+		}
+	}
+	return pkds
+}
+
+func wrapErr(code codes.Code, err error) error {
+	return status.Error(code, err.Error())
 }

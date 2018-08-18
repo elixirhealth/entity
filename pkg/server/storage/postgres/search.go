@@ -8,6 +8,7 @@ import (
 	"sync"
 
 	"github.com/elixirhealth/entity/pkg/server/storage"
+	bstorage "github.com/elixirhealth/service-base/pkg/server/storage"
 )
 
 var searchers = []searcher{
@@ -109,7 +110,7 @@ func (ts *trigramSearcher) preprocQuery(raw string) string {
 }
 
 type searchResultMerger interface {
-	merge(rows queryRows, searchName string, et storage.EntityType) (int, error)
+	merge(rows bstorage.QueryRows, searchName string, et storage.EntityType) (int, error)
 	top(n uint) storage.EntitySims
 }
 
@@ -125,7 +126,7 @@ func newSearchResultMerger() searchResultMerger {
 }
 
 func (srm *searchResultMergerImpl) merge(
-	rs queryRows, searchName string, et storage.EntityType,
+	rs bstorage.QueryRows, searchName string, et storage.EntityType,
 ) (int, error) {
 	n := 0
 	for rs.Next() {

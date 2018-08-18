@@ -17,11 +17,20 @@ import (
 )
 
 const (
+	keySchema            = "key"
+	publicKeyDetailTable = "public_key_detail"
+
+	publicKeyCol = "public_key"
+	keyTypeCol   = "key_type"
+
+	count                    = "COUNT(*)"
 	pqUniqueViolationErrCode = "23505"
 )
 
 var (
 	psql = sq.StatementBuilder.PlaceholderFormat(sq.Dollar)
+
+	fqPublicKeyDetailTable = keySchema + "." + publicKeyDetailTable
 
 	errEmptyDBUrl            = errors.New("empty DB URL")
 	errUnexpectedStorageType = errors.New("unexpected storage type")
@@ -32,7 +41,7 @@ type storer struct {
 	idGen   id.Generator
 	db      *sql.DB
 	dbCache sq.DBProxyContext
-	qr      querier
+	qr      bstorage.Querier
 	newSRM  func() searchResultMerger
 	logger  *zap.Logger
 }
@@ -55,7 +64,7 @@ func New(
 		idGen:   idGen,
 		db:      db,
 		dbCache: sq.NewStmtCacher(db),
-		qr:      &querierImpl{},
+		qr:      bstorage.NewQuerier(),
 		newSRM:  func() searchResultMerger { return newSearchResultMerger() },
 		logger:  logger,
 	}, nil
@@ -76,7 +85,7 @@ func (s *storer) PutEntity(e *api.EntityDetail) (string, error) {
 	}
 	fqTbl := fullTableName(storage.GetEntityType(e))
 	vals := getPutStmtValues(e)
-	ctx, cancel := context.WithTimeout(context.Background(), s.params.PutQueryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), s.params.Timeout)
 	if insert {
 		q := psql.RunWith(s.dbCache).
 			Insert(fqTbl).
@@ -115,7 +124,7 @@ func (s *storer) GetEntity(entityID string) (*api.EntityDetail, error) {
 		From(fullTableName(et)).
 		Where(sq.Eq{entityIDCol: entityID})
 	s.logger.Debug("getting entity", logGetSelect(q, et, entityID)...)
-	ctx, cancel := context.WithTimeout(context.Background(), s.params.GetQueryTimeout)
+	ctx, cancel := context.WithTimeout(context.Background(), s.params.Timeout)
 	defer cancel()
 	row := s.qr.SelectQueryRowContext(ctx, q)
 	if err := row.Scan(dest...); err == sql.ErrNoRows {
@@ -148,7 +157,7 @@ func (s *storer) SearchEntity(query string, limit uint) ([]*api.EntityDetail, er
 				Limit(uint64(limit))
 			s.logger.Debug("searching for entity", logSearchSelect(q, s2, query)...)
 			ctx, cancel := context.WithTimeout(context.Background(),
-				s.params.SearchQueryTimeout)
+				s.params.Timeout)
 			defer cancel()
 			rows, err := s.qr.SelectQueryContext(ctx, q)
 			n, err := s.processSearchQuery(srm, rows, err, s2)
@@ -176,8 +185,123 @@ func (s *storer) SearchEntity(query string, limit uint) ([]*api.EntityDetail, er
 	return es, nil
 }
 
+func (s *storer) AddPublicKeys(pkds []*api.PublicKeyDetail) error {
+	if err := api.ValidatePublicKeyDetails(pkds); err != nil {
+		return err
+	}
+	if len(pkds) > int(s.params.MaxBatchSize) {
+		return storage.ErrMaxBatchSizeExceeded
+	}
+	q := psql.RunWith(s.db).
+		Insert(fqPublicKeyDetailTable).
+		Columns(pkdSQLCols...)
+	for _, pkd := range pkds {
+		q = q.Values(getPKDSQLValues(pkd)...)
+	}
+	s.logger.Debug("adding public keys to storage", logAddingPublicKeys(q, pkds)...)
+	ctx, cancel := context.WithTimeout(context.Background(), s.params.Timeout)
+	defer cancel()
+	_, err := s.qr.InsertExecContext(ctx, q)
+	if err != nil {
+		return err
+	}
+	s.logger.Debug("added public keys to storage", logAddedPublicKeys(pkds)...)
+	return nil
+}
+
+func (s *storer) GetPublicKeys(pks [][]byte) ([]*api.PublicKeyDetail, error) {
+	if err := api.ValidatePublicKeys(pks); err != nil {
+		return nil, err
+	}
+	if len(pks) > int(s.params.MaxBatchSize) {
+		return nil, storage.ErrMaxBatchSizeExceeded
+	}
+	cols, _, _ := prepPKDScan()
+	q := psql.RunWith(s.dbCache).
+		Select(cols...).
+		From(fqPublicKeyDetailTable).
+		Where(sq.Eq{publicKeyCol: pks})
+	s.logger.Debug("getting public keys from storage", logGettingPublicKeys(q, pks)...)
+	pkds, err := s.getPKDsFromQuery(q, len(pks))
+	if err != nil {
+		return nil, err
+	}
+	s.logger.Debug("got public keys from storage", zap.Int(logNPublicKeys, len(pkds)))
+	return orderPKDs(pkds, pks), nil
+}
+
+func (s *storer) GetEntityPublicKeys(
+	entityID string, kt api.KeyType,
+) ([]*api.PublicKeyDetail, error) {
+	if entityID == "" {
+		return nil, api.ErrEmptyEntityID
+	}
+	cols, _, _ := prepPKDScan()
+	q := psql.RunWith(s.dbCache).
+		Select(cols...).
+		From(fqPublicKeyDetailTable).
+		Where(sq.Eq{entityIDCol: entityID, keyTypeCol: kt.String()})
+	s.logger.Debug("getting entity public keys from storage",
+		logGettingEntityPubKeys(q, entityID)...)
+	pkds, err := s.getPKDsFromQuery(q, storage.MaxEntityKeyTypeKeys)
+	if err != nil {
+		return nil, err
+	}
+	s.logger.Debug("got entity public keys from storage",
+		logGotEntityPubKeys(entityID, pkds)...)
+	return pkds, nil
+}
+
+func (s *storer) CountEntityPublicKeys(entityID string, kt api.KeyType) (int, error) {
+	if entityID == "" {
+		return 0, api.ErrEmptyEntityID
+	}
+	q := psql.RunWith(s.dbCache).
+		Select(count).
+		From(fqPublicKeyDetailTable).
+		Where(sq.Eq{
+			entityIDCol: entityID,
+			keyTypeCol:  kt.String(),
+		})
+	s.logger.Debug("counting public keys for entity",
+		logCountingEntityPubKeys(q, entityID, kt)...)
+	ctx, cancel := context.WithTimeout(context.Background(), s.params.Timeout)
+	defer cancel()
+	row := s.qr.SelectQueryRowContext(ctx, q)
+	var count int
+	if err := row.Scan(&count); err != nil {
+		return 0, err
+	}
+	s.logger.Debug("counted public keys for entity",
+		logCountEntityPubKeys(entityID, kt, count)...)
+	return count, nil
+}
+
+func (s *storer) getPKDsFromQuery(q sq.SelectBuilder, size int) ([]*api.PublicKeyDetail, error) {
+	ctx, cancel := context.WithTimeout(context.Background(), s.params.Timeout)
+	defer cancel()
+	rows, err := s.qr.SelectQueryContext(ctx, q)
+	if err != nil {
+		return nil, err
+	}
+	pkds := make([]*api.PublicKeyDetail, size)
+	i := 0
+	for rows.Next() {
+		_, dest, create := prepPKDScan()
+		if err := rows.Scan(dest...); err != nil {
+			return nil, err
+		}
+		pkds[i] = create()
+		i++
+	}
+	if err := rows.Err(); err != nil {
+		return nil, err
+	}
+	return pkds[:i], nil
+}
+
 func (s *storer) processSearchQuery(
-	srm searchResultMerger, rows queryRows, err error, sch searcher,
+	srm searchResultMerger, rows bstorage.QueryRows, err error, sch searcher,
 ) (int, error) {
 	if err != nil {
 		if err != context.DeadlineExceeded && err != sql.ErrNoRows {
@@ -200,45 +324,4 @@ func (s *storer) processSearchQuery(
 
 func (s *storer) Close() error {
 	return s.db.Close()
-}
-
-type queryRows interface {
-	Scan(dest ...interface{}) error
-	Next() bool
-	Close() error
-	Err() error
-}
-
-type querier interface {
-	SelectQueryContext(ctx context.Context, b sq.SelectBuilder) (queryRows, error)
-	SelectQueryRowContext(ctx context.Context, b sq.SelectBuilder) sq.RowScanner
-	InsertExecContext(ctx context.Context, b sq.InsertBuilder) (sql.Result, error)
-	UpdateExecContext(ctx context.Context, b sq.UpdateBuilder) (sql.Result, error)
-}
-
-type querierImpl struct {
-}
-
-func (q *querierImpl) SelectQueryContext(
-	ctx context.Context, b sq.SelectBuilder,
-) (queryRows, error) {
-	return b.QueryContext(ctx)
-}
-
-func (q *querierImpl) SelectQueryRowContext(
-	ctx context.Context, b sq.SelectBuilder,
-) sq.RowScanner {
-	return b.QueryRowContext(ctx)
-}
-
-func (q *querierImpl) InsertExecContext(
-	ctx context.Context, b sq.InsertBuilder,
-) (sql.Result, error) {
-	return b.ExecContext(ctx)
-}
-
-func (q *querierImpl) UpdateExecContext(
-	ctx context.Context, b sq.UpdateBuilder,
-) (sql.Result, error) {
-	return b.ExecContext(ctx)
 }

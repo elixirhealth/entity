@@ -22,28 +22,28 @@ var (
 	// ErrUnknownEntityType indicates when the entity type is unknown (usually used in default
 	// case of switch statement).
 	ErrUnknownEntityType = errors.New("unknown entity type")
-)
 
-var (
-	// DefaultStorage is the default bstorage type.
-	DefaultStorage = bstorage.Memory
+	// ErrMaxBatchSizeExceeded indicates when the number of public keys an in an add or get
+	// request ot the storer exceeds the maximum size.
+	ErrMaxBatchSizeExceeded = errors.New("number of public keys in request exceeeds max " +
+		"batch size")
 
-	// DefaultPutQueryTimeout is the default timeout for DB INSERT or UPDATE queries used to in
-	// a Storer's PutEntity method.
-	DefaultPutQueryTimeout = 2 * time.Second
+	// DefaultMaxBatchSize is the maximum size of a batch of public keys.
+	DefaultMaxBatchSize = uint(64)
 
-	// DefaultGetQueryTimeout is the default timeout for DB SELECT queries used to in
-	// a Storer's GetEntity method.
-	DefaultGetQueryTimeout = 2 * time.Second
+	// MaxEntityKeyTypeKeys indicates the maximum number of public keys an entity can have for
+	// a given key type.
+	MaxEntityKeyTypeKeys = 256
 
-	// DefaultSearchQueryTimeout is the default timeout for DB SELECT queries used to in
-	// a Storer's SearchEntity method.
-	DefaultSearchQueryTimeout = 2 * time.Second
+	// DefaultStorageType is the default storage type.
+	DefaultStorageType = bstorage.Memory
+
+	// DefaultTimeout is the default timeout for DB queries.
+	DefaultTimeout = 2 * time.Second
 )
 
 // Storer stores and retrieves entities.
 type Storer interface {
-
 	// PutEntity inserts a new or updates an existing entity (based on E.EntityId) and returns
 	// the entity ID.
 	PutEntity(e *api.EntityDetail) (string, error)
@@ -55,25 +55,35 @@ type Storer interface {
 	// to least.
 	SearchEntity(query string, limit uint) ([]*api.EntityDetail, error)
 
+	// AddPublicKeys stores a list of public keys details.
+	AddPublicKeys(pkds []*api.PublicKeyDetail) error
+
+	// GetPublicKeyDetails returns a public key detail for each public key.
+	GetPublicKeys(pks [][]byte) ([]*api.PublicKeyDetail, error)
+
+	// GetEntityPublicKeys returns the public keys of a given type associated with an entity.
+	GetEntityPublicKeys(entityID string, kt api.KeyType) ([]*api.PublicKeyDetail, error)
+
+	// CountEntityPublicKeys counts the number of public keys of a given type for an entity.
+	CountEntityPublicKeys(entityID string, kt api.KeyType) (int, error)
+
 	// Close handles any necessary cleanup.
 	Close() error
 }
 
 // Parameters defines the parameters of the Storer.
 type Parameters struct {
-	Type               bstorage.Type
-	PutQueryTimeout    time.Duration
-	GetQueryTimeout    time.Duration
-	SearchQueryTimeout time.Duration
+	Type         bstorage.Type
+	Timeout      time.Duration
+	MaxBatchSize uint
 }
 
 // NewDefaultParameters returns a *Parameters object with default values.
 func NewDefaultParameters() *Parameters {
 	return &Parameters{
-		Type:               DefaultStorage,
-		PutQueryTimeout:    DefaultPutQueryTimeout,
-		GetQueryTimeout:    DefaultGetQueryTimeout,
-		SearchQueryTimeout: DefaultSearchQueryTimeout,
+		Type:         DefaultStorageType,
+		Timeout:      DefaultTimeout,
+		MaxBatchSize: DefaultMaxBatchSize,
 	}
 }
 

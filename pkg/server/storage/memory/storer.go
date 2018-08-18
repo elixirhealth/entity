@@ -2,6 +2,7 @@ package memory
 
 import (
 	"container/heap"
+	"encoding/hex"
 	"sort"
 	"strings"
 	"sync"
@@ -13,21 +14,23 @@ import (
 )
 
 type storer struct {
-	params *storage.Parameters
-	idGen  id.Generator
-	stored map[string]*api.EntityDetail
-	mu     sync.Mutex
-	logger *zap.Logger
+	params   *storage.Parameters
+	idGen    id.Generator
+	entities map[string]*api.EntityDetail
+	pkds     map[string]*api.PublicKeyDetail
+	mu       sync.Mutex
+	logger   *zap.Logger
 }
 
 // New creates a new Storer backed by an in-memory map with the given id.Generator, params, and
 // logger.
 func New(idGen id.Generator, params *storage.Parameters, logger *zap.Logger) storage.Storer {
 	return &storer{
-		params: params,
-		idGen:  idGen,
-		stored: make(map[string]*api.EntityDetail),
-		logger: logger,
+		params:   params,
+		idGen:    idGen,
+		entities: make(map[string]*api.EntityDetail),
+		pkds:     make(map[string]*api.PublicKeyDetail),
+		logger:   logger,
 	}
 }
 
@@ -46,12 +49,12 @@ func (s *storer) PutEntity(e *api.EntityDetail) (string, error) {
 		return "", err
 	}
 	s.mu.Lock()
-	if _, in := s.stored[e.EntityId]; in && insert {
+	if _, in := s.entities[e.EntityId]; in && insert {
 		return "", storage.ErrDupGenEntityID
 	}
-	s.stored[e.EntityId] = e
+	s.entities[e.EntityId] = e
 	s.mu.Unlock()
-	s.logger.Debug("successfully stored entity", logPutResult(e.EntityId, insert)...)
+	s.logger.Debug("successfully entities entity", logPutResult(e.EntityId, insert)...)
 	return e.EntityId, nil
 }
 
@@ -60,7 +63,7 @@ func (s *storer) GetEntity(entityID string) (*api.EntityDetail, error) {
 		return nil, err
 	}
 	s.mu.Lock()
-	e, in := s.stored[entityID]
+	e, in := s.entities[entityID]
 	s.mu.Unlock()
 	if !in {
 		return nil, storage.ErrMissingEntity
@@ -78,7 +81,7 @@ func (s *storer) SearchEntity(query string, limit uint) ([]*api.EntityDetail, er
 	heap.Init(ess)
 
 	// just loop through all entities once
-	for _, e := range s.stored {
+	for _, e := range s.entities {
 		if matches, searcher, sim := checkMatchesQuery(e, query); matches {
 			es := storage.NewEntitySim(e)
 			es.Add(searcher, sim)
@@ -99,6 +102,74 @@ func (s *storer) SearchEntity(query string, limit uint) ([]*api.EntityDetail, er
 		result = append(result, es.E)
 	}
 	return result, nil
+}
+
+func (s *storer) AddPublicKeys(pkds []*api.PublicKeyDetail) error {
+	if err := api.ValidatePublicKeyDetails(pkds); err != nil {
+		return err
+	}
+	for _, pkd := range pkds {
+		pkHex := hex.EncodeToString(pkd.PublicKey)
+		s.mu.Lock()
+		s.pkds[pkHex] = pkd
+		s.mu.Unlock()
+	}
+	s.logger.Debug("added public keys to storage", zap.Int(logNPublicKeys, len(pkds)))
+	return nil
+}
+
+func (s *storer) GetPublicKeys(pks [][]byte) ([]*api.PublicKeyDetail, error) {
+	if err := api.ValidatePublicKeys(pks); err != nil {
+		return nil, err
+	}
+	pkds := make([]*api.PublicKeyDetail, 0, len(pks))
+	for _, pk := range pks {
+		pkHex := hex.EncodeToString(pk)
+		s.mu.Lock()
+		pkd, in := s.pkds[pkHex]
+		if !in {
+			s.mu.Unlock()
+			return nil, api.ErrNoSuchPublicKey
+		}
+		pkds = append(pkds, pkd)
+		s.mu.Unlock()
+	}
+	s.logger.Debug("got public keys from storage", zap.Int(logNPublicKeys, len(pkds)))
+	return pkds, nil
+}
+
+func (s *storer) GetEntityPublicKeys(
+	entityID string, kt api.KeyType,
+) ([]*api.PublicKeyDetail, error) {
+	if entityID == "" {
+		return nil, api.ErrEmptyEntityID
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	pkds := make([]*api.PublicKeyDetail, 0, storage.MaxEntityKeyTypeKeys)
+	for _, pkd := range s.pkds {
+		if pkd.EntityId == entityID && pkd.KeyType == kt {
+			pkds = append(pkds, pkd)
+		}
+	}
+	s.logger.Debug("found public keys for entity", logGetEntityPubKeys(entityID, pkds)...)
+	return pkds, nil
+}
+
+func (s *storer) CountEntityPublicKeys(entityID string, kt api.KeyType) (int, error) {
+	if entityID == "" {
+		return 0, api.ErrEmptyEntityID
+	}
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	c := 0
+	for _, pkd := range s.pkds {
+		if pkd.EntityId == entityID && pkd.KeyType == kt {
+			c++
+		}
+	}
+	s.logger.Debug("counted public keys for entity", logCountEntityPubKeys(entityID, kt)...)
+	return c, nil
 }
 
 func (s *storer) Close() error {

@@ -10,17 +10,20 @@ import (
 )
 
 const (
-	logEntityType = "entity_type"
-	logQuery      = "query"
-	logSQL        = "sql"
-	logArgs       = "args"
-	logEntityID   = "entity_id"
-	logInsert     = "insert"
-	logUpdate     = "update"
-	logSearcher   = "searcher"
-	logLimit      = "limit"
-	logResults    = "results"
-	logNFound     = "n_found"
+	logEntityType  = "entity_type"
+	logQuery       = "query"
+	logSQL         = "sql"
+	logArgs        = "args"
+	logEntityID    = "entity_id"
+	logInsert      = "insert"
+	logUpdate      = "update"
+	logSearcher    = "searcher"
+	logLimit       = "limit"
+	logResults     = "results"
+	logNFound      = "n_found"
+	logNPublicKeys = "n_public_keys"
+	logKeyType     = "key_type"
+	logCount       = "count"
 )
 
 func logGetSelect(q sq.SelectBuilder, et storage.EntityType, entityID string) []zapcore.Field {
@@ -88,6 +91,68 @@ func logPutUpdate(q sq.UpdateBuilder, e *api.EntityDetail) []zapcore.Field {
 		zap.Stringer(logEntityType, storage.GetEntityType(e)),
 		zap.String(logSQL, qSQL),
 		zap.Array(logArgs, queryArgs(args)),
+	}
+}
+
+func logAddingPublicKeys(q sq.InsertBuilder, pkds []*api.PublicKeyDetail) []zapcore.Field {
+	qSQL, args, err := q.ToSql()
+	errors.MaybePanic(err)
+	return []zapcore.Field{
+		zap.Int(logNPublicKeys, len(pkds)),
+		zap.String(logSQL, qSQL),
+		zap.Array(logArgs, queryArgs(args)),
+	}
+}
+
+func logAddedPublicKeys(pkds []*api.PublicKeyDetail) []zapcore.Field {
+	return []zapcore.Field{
+		zap.Int(logNPublicKeys, len(pkds)),
+	}
+}
+
+func logGettingPublicKeys(q sq.SelectBuilder, pks [][]byte) []zapcore.Field {
+	qSQL, args, err := q.ToSql()
+	errors.MaybePanic(err)
+	return []zapcore.Field{
+		zap.Int(logNPublicKeys, len(pks)),
+		zap.String(logSQL, qSQL),
+		zap.Array(logArgs, queryArgs(args)),
+	}
+}
+
+func logGettingEntityPubKeys(q sq.SelectBuilder, entityID string) []zapcore.Field {
+	qSQL, args, err := q.ToSql()
+	errors.MaybePanic(err)
+	return []zapcore.Field{
+		zap.String(logEntityID, entityID),
+		zap.String(logSQL, qSQL),
+		zap.Array(logArgs, queryArgs(args)),
+	}
+}
+
+func logGotEntityPubKeys(entityID string, pkds []*api.PublicKeyDetail) []zapcore.Field {
+	return []zapcore.Field{
+		zap.String(logEntityID, entityID),
+		zap.Int(logNPublicKeys, len(pkds)),
+	}
+}
+
+func logCountingEntityPubKeys(q sq.SelectBuilder, entityID string, kt api.KeyType) []zapcore.Field {
+	qSQL, args, err := q.ToSql()
+	errors.MaybePanic(err)
+	return []zapcore.Field{
+		zap.String(logEntityID, entityID),
+		zap.Stringer(logKeyType, kt),
+		zap.String(logSQL, qSQL),
+		zap.Array(logArgs, queryArgs(args)),
+	}
+}
+
+func logCountEntityPubKeys(entityID string, kt api.KeyType, count int) []zapcore.Field {
+	return []zapcore.Field{
+		zap.String(logEntityID, entityID),
+		zap.Stringer(logKeyType, kt),
+		zap.Int(logCount, count),
 	}
 }
 
