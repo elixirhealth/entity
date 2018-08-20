@@ -96,8 +96,8 @@ func (ss searcherSimilarities) MarshalLogObject(enc zapcore.ObjectEncoder) error
 	return nil
 }
 
-// EntitySim contains an *api.EntityDetail and its Similarities to the query for a number of different
-// Searches
+// EntitySim contains an *api.EntityDetail and its Similarities to the query for a number of
+// different Searches
 type EntitySim struct {
 	E                  *api.EntityDetail
 	Similarities       searcherSimilarities

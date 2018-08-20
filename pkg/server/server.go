@@ -29,7 +29,6 @@ type Entity struct {
 	config *Config
 
 	storer storage.Storer
-	// TODO maybe add other things here
 }
 
 // newEntity creates a new EntityServer from the given config.
@@ -46,6 +45,7 @@ func newEntity(config *Config) (*Entity, error) {
 	}, nil
 }
 
+// PutEntity adds a new or updates an existing entity.
 func (e *Entity) PutEntity(
 	ctx context.Context, rq *api.PutEntityRequest,
 ) (*api.PutEntityResponse, error) {
@@ -63,6 +63,7 @@ func (e *Entity) PutEntity(
 	return rp, nil
 }
 
+// GetEntity returns an existing entity with the given entity ID.
 func (e *Entity) GetEntity(
 	ctx context.Context, rq *api.GetEntityRequest,
 ) (*api.GetEntityResponse, error) {
@@ -79,6 +80,7 @@ func (e *Entity) GetEntity(
 	return rp, nil
 }
 
+// SearchEntity searches for entities matching the given query.
 func (e *Entity) SearchEntity(
 	ctx context.Context, rq *api.SearchEntityRequest,
 ) (*api.SearchEntityResponse, error) {
@@ -99,6 +101,7 @@ func (e *Entity) SearchEntity(
 	return rp, nil
 }
 
+// AddPublicKeys adds a set of public keys for a given entity.
 func (e *Entity) AddPublicKeys(
 	ctx context.Context, rq *api.AddPublicKeysRequest,
 ) (*api.AddPublicKeysResponse, error) {

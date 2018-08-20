@@ -178,7 +178,9 @@ func (s *storer) Close() error {
 
 // checkMatchesQuery checks whether an entity matches a given query under various searcher,
 // returning the first match it finds, if any
-func checkMatchesQuery(e *api.EntityDetail, query string) (matches bool, searcher string, sim float32) {
+func checkMatchesQuery(
+	e *api.EntityDetail, query string) (matches bool, searcher string, sim float32,
+) {
 	if matches, sim = matchesUpper(query, e.EntityId); matches {
 		return true, "EntityID", sim
 	}

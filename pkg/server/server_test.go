@@ -489,5 +489,5 @@ func (f *fixedStorer) GetPublicKeys(pks [][]byte) ([]*api.PublicKeyDetail, error
 }
 
 func (f *fixedStorer) Close() error {
-	return nil
+	return f.closeErr
 }

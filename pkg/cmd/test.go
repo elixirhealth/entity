@@ -37,8 +37,6 @@ func testIO() error {
 	timeout := time.Duration(viper.GetInt(timeoutFlag) * 1e9)
 	nEntities := uint(viper.GetInt(nEntitiesFlag))
 	nSearches := uint(viper.GetInt(nSearchesFlag))
-	nKeyTypeKeys := uint(64)
-	nGets := uint(16)
 
 	clients, err := getClients()
 	if err != nil {
@@ -79,6 +77,16 @@ func testIO() error {
 		}
 		logger.Info("found search results", zap.Int(logNResults, len(rp.Entities)))
 	}
+
+	return testKeysIO(clients, logger)
+}
+
+func testKeysIO(clients []entityapi.EntityClient, logger *zap.Logger) error {
+	rng := rand.New(rand.NewSource(0))
+	nEntities := uint(viper.GetInt(nEntitiesFlag))
+	timeout := time.Duration(viper.GetInt(timeoutFlag) * 1e9)
+	nKeyTypeKeys := uint(64)
+	nGets := uint(16)
 
 	entityAuthorKeys := make(map[string][][]byte)
 	entityReaderKeys := make(map[string][][]byte)
@@ -164,7 +172,6 @@ func testIO() error {
 			return err
 		}
 	}
-
 	return nil
 }
 

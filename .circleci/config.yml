@@ -24,3 +24,11 @@ jobs:
       - run: make test
       - run: make acceptance
       - run: make lint
+      - run: make demo
+      - run:
+          name: publish docker image
+          command: |
+            if [[ "${CIRCLE_BRANCH}" == "master" || "${CIRCLE_BRANCH}" == "develop" ]]; then
+              docker login -u _json_key -p "${GCR_SVC_JSON}" gcr.io
+              ./vendor/github.com/elixirhealth/service-base/scripts/publish key ${CIRCLE_BRANCH}
+            fi
