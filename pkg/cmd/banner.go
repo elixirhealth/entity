@@ -7,7 +7,7 @@ import (
 	"time"
 
 	cerrors "github.com/drausin/libri/libri/common/errors"
-	"github.com/elixirhealth/directory/version"
+	"github.com/elixirhealth/entity/version"
 )
 
 const bannerTemplate = `

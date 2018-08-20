@@ -27,6 +27,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:2b8081e47e5a4673ad1217bf551f5e007a0059231c6bc32dfc5a77bb970a23da"
+  name = "github.com/Pallinder/go-randomdata"
+  packages = ["."]
+  pruneopts = "NUT"
+  revision = "15df0648130a623e418886f81b2aaecd0a00547b"
+
+[[projects]]
+  branch = "master"
   digest = "1:707ebe952a8b3d00b343c01536c79c73771d100f63ec6babeaed5c79e2b8a8dd"
   name = "github.com/beorn7/perks"
   packages = ["quantile"]
@@ -50,12 +58,12 @@
   version = "v2.0.0"
 
 [[projects]]
-  digest = "1:a2c1d0e43bd3baaa071d1b9ed72c27d78169b2b269f71c105ac4ba34b1be4a39"
+  digest = "1:ffe9824d294da03b391f44e1ae8281281b4afc1bdaa9588c9097785e3af10cec"
   name = "github.com/davecgh/go-spew"
   packages = ["spew"]
   pruneopts = "NUT"
-  revision = "346938d642f2ec3594ed81d874461961cd0faa76"
-  version = "v1.1.0"
+  revision = "8991bc29aa16c548c550c7ff78260e27b9ab7c73"
+  version = "v1.1.1"
 
 [[projects]]
   digest = "1:95cc5a73394e10b3c6656059b9a8c685bf2acc9ab4ef3b054e4d660aeae195d0"
@@ -71,16 +79,17 @@
 
 [[projects]]
   branch = "develop"
-  digest = "1:b1f581b93ab311c75c0c90c1c68863f2ae9cc6c6377eacb083d177aaf1c6aa8f"
+  digest = "1:e5a30854eab1e5891dd15e2f247977b4340f8e0eced95f0f9e6065e94cf92a92"
   name = "github.com/elixirhealth/service-base"
   packages = [
     "pkg/cmd",
     "pkg/server",
     "pkg/server/storage",
+    "pkg/util",
     "pkg/version",
   ]
   pruneopts = "T"
-  revision = "1ff9c8e6e67aa2debd6fdbb67f8ec5b02c3c6d0d"
+  revision = "8ccf3cdfbbf8944dcdd5f6a25a2916765c419bd8"
 
 [[projects]]
   digest = "1:1b91ae0dc69a41d4c2ed23ea5cffb721ea63f5037ca4b81e6d6771fbb8f45129"
@@ -468,7 +477,7 @@
     "transport/grpc",
   ]
   pruneopts = "NUT"
-  revision = "0e8d13b5c025da6a7cf249bb854e5869921dd459"
+  revision = "e21acd801f91da814261b938941d193bb036441a"
 
 [[projects]]
   digest = "1:8a3a8e562c362acf2762a091627554f12d49c242dfe905cf7231c66cb5c66b6e"
@@ -493,7 +502,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a4bbb8e75586a962df256a9a29d6d7cc118fd410a2b28b57b28d01bfe5d13eff"
+  digest = "1:a76b2bff3873b80af50ec8d0a47dc503d11f4ca7a82b00a50053a7c82b012bac"
   name = "google.golang.org/genproto"
   packages = [
     "googleapis/api/annotations",
@@ -503,7 +512,7 @@
     "googleapis/type/latlng",
   ]
   pruneopts = "NUT"
-  revision = "d0a8f471bba2dbb160885b0000d814ee5d559bad"
+  revision = "c66870c02cf823ceb633bcd05be3c7cda29976f4"
 
 [[projects]]
   digest = "1:3fd4260d097530f25dcfa98c20139e0aa002f8905de6ab5b7f658f953bf55b65"
@@ -558,12 +567,14 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Masterminds/squirrel",
+    "github.com/Pallinder/go-randomdata",
     "github.com/drausin/libri/libri/common/errors",
     "github.com/drausin/libri/libri/common/logging",
     "github.com/drausin/libri/libri/common/parse",
     "github.com/elixirhealth/service-base/pkg/cmd",
     "github.com/elixirhealth/service-base/pkg/server",
     "github.com/elixirhealth/service-base/pkg/server/storage",
+    "github.com/elixirhealth/service-base/pkg/util",
     "github.com/elixirhealth/service-base/pkg/version",
     "github.com/golang/protobuf/proto",
     "github.com/lib/pq",
@@ -577,6 +588,8 @@
     "go.uber.org/zap/zapcore",
     "golang.org/x/net/context",
     "google.golang.org/grpc",
+    "google.golang.org/grpc/codes",
+    "google.golang.org/grpc/status",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
