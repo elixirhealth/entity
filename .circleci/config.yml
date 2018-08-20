@@ -10,6 +10,7 @@ jobs:
     working_directory: /go/src/github.com/elixirhealth/entity
     steps:
       - checkout
+      - setup_remote_docker
       - restore_cache:
           keys:
             - arch={{ arch }}-vendor={{ checksum "Gopkg.lock" }}-v1
