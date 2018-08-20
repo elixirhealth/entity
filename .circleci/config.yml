@@ -22,6 +22,8 @@ jobs:
           paths:
             - vendor
       - run: make build
+      - run: make build-static
+      - run: make docker-image
       - run: make test
       - run: make acceptance
       - run: make lint
